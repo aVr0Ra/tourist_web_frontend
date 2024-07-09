@@ -1,9 +1,9 @@
 <template>
-  <div class="card">
-    <img :src="image" alt="Destination Image" class="card-img">
-    <div class="card-content">
-      <h2>{{ title }}</h2>
-      <p>{{ description }}</p>
+  <div class="destination-card">
+    <img :src="image" :alt="title" class="destination-image">
+    <div class="destination-info">
+      <h3>{{ title }}</h3>
+      <p class="description"> {{ shortDescription }} </p>
     </div>
   </div>
 </template>
@@ -12,36 +12,49 @@
 export default {
   name: 'DestinationCard',
   props: {
-    image: String,
+    image: String, // 直接使用传入的图片URL
     title: String,
     description: String
+  },
+  computed: {
+    shortDescription() {
+      if (this.description.length > 150) {
+        return this.description.substr(0, 150);
+      }
+      else {
+        return this.description;
+      }
+    }
   }
 }
 </script>
 
 <style scoped>
-.card {
-  border: 1px solid #ddd;
+.destination-card {
+  width: 30%; /* Adjusted for 3 columns layout */
+  margin: 10px;
+  border: 1px solid #ccc;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin: 16px;
-  max-width: 300px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
-.card-img {
+.destination-image {
   width: 100%;
-  height: 200px;
+  height: 200px; /* Adjusted height */
   object-fit: cover;
 }
-.card-content {
-  padding: 16px;
+.destination-info {
+  padding: 10px;
+  text-align: center;
 }
-h2 {
-  margin: 0 0 8px;
-  font-size: 1.5em;
+h3 {
+  margin: 10px 0;
 }
-p {
-  margin: 0;
-  color: #555;
+.description {
+  height: 60px; /* Adjusted height */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* Increased line clamp */
 }
 </style>

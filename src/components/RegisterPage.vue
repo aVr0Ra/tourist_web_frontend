@@ -26,6 +26,13 @@
         <label for="email">电子邮箱:</label>
         <input type="email" id="email" v-model="email" required>
       </div>
+      <div>
+        <label for="userType">用户类型:</label>
+        <select id="userType" v-model="userType" required>
+          <option value="regular">普通旅客</option>
+          <option value="agent">旅行社人员</option>
+        </select>
+      </div>
       <button type="submit">注册</button>
     </form>
   </div>
@@ -43,7 +50,8 @@ export default {
       confirmPassword: '',
       firstName: '',
       lastName: '',
-      email: ''
+      email: '',
+      userType: 'regular' // 默认选中普通旅客
     };
   },
   methods: {
@@ -63,7 +71,7 @@ export default {
           email: this.email
         },
         avatar: null,
-        user_type: 'regular'
+        user_type: this.userType
       };
 
       try {
@@ -73,13 +81,11 @@ export default {
           }
         });
         console.log('注册成功:', response.data);
-        // 显示成功消息并跳转到登录页面
         alert('注册成功，请重新登录');
         this.$router.push('/login');
       } catch (error) {
         if (error.response) {
           console.error('注册失败:', error.response.data);
-          // 显示错误消息
           alert(`注册失败: ${JSON.stringify(error.response.data)}`);
         } else {
           console.error('注册失败:', error.message);
@@ -104,7 +110,7 @@ form label {
   display: block;
   margin-bottom: 5px;
 }
-form input {
+form input, form select {
   width: 100%;
   padding: 8px;
   box-sizing: border-box;

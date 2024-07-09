@@ -1,16 +1,18 @@
 <template>
   <section class="destinations">
     <DestinationCard
-      v-for="destination in destinations"
+      v-for="destination in displayedDestinations"
       :key="destination.id"
-      :image="destination.image"
-      :title="destination.title"
+      :image="destination.images[0].image"
+      :title="destination.name"
       :description="destination.description"
+      @click.native="handleCardClick(destination.id)"
     />
   </section>
 </template>
 
 <script>
+import axios from 'axios';
 import DestinationCard from './DestinationCard.vue';
 
 export default {
@@ -20,27 +22,43 @@ export default {
   },
   data() {
     return {
-      destinations: [
-        {
-          id: 1,
-          image: 'https://youimg1.c-ctrip.com/target/1002090000003p7td5E3D.jpg',
-          title: '巴黎',
-          description: '巴黎是法国的首都，也是世界上最浪漫的城市之一。'
-        },
-        {
-          id: 2,
-          image: 'https://example.com/image2.jpg',
-          title: '纽约',
-          description: '纽约是美国最大的城市，有许多著名的景点和博物馆。'
-        },
-        {
-          id: 3,
-          image: 'https://example.com/image3.jpg',
-          title: '东京',
-          description: '东京是日本的首都，以其现代化和传统文化相结合而闻名。'
-        }
-      ]
+      isLoggedIn: false,
+      destinations: [],
+      displayedDestinations: []
     };
+  },
+  created() {
+    this.checkLoginStatus();
+    this.fetchDestinations();
+  },
+  methods: {
+    checkLoginStatus() {
+      const token = localStorage.getItem('token');
+      this.isLoggedIn = !!token;
+    },
+    async fetchDestinations() {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/api/attractions');
+        this.destinations = response.data;
+        this.displayedDestinations = this.getRandomDestinations(this.destinations, 6);
+      } catch (error) {
+        console.error('获取景点数据失败:', error);
+      }
+    },
+    getRandomDestinations(destinations, count) {
+      if (destinations.length <= count) {
+        return destinations;
+      }
+      const shuffled = destinations.sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, count);
+    },
+    handleCardClick(id) {
+      if (this.isLoggedIn) {
+        this.$router.push(`/attractions/${id}`);
+      } else {
+        alert('您还未登录，请登录后再查看景点相关信息');
+      }
+    }
   }
 }
 </script>
@@ -49,6 +67,6 @@ export default {
 .destinations {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: space-around;
 }
 </style>
