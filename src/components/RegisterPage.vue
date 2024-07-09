@@ -73,7 +73,9 @@ export default {
           }
         });
         console.log('注册成功:', response.data);
-        // 可以在这里处理成功注册后的操作，例如跳转到登录页面
+        // 显示成功消息并跳转到登录页面
+        alert('注册成功，请重新登录');
+        this.$router.push('/login');
       } catch (error) {
         if (error.response) {
           console.error('注册失败:', error.response.data);

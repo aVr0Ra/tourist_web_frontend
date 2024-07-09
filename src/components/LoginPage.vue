@@ -16,6 +16,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'LoginPage',
   data() {
@@ -25,9 +27,33 @@ export default {
     };
   },
   methods: {
-    login() {
-      // 登录逻辑
-      console.log('Logging in with', this.username, this.password);
+    async login() {
+      const payload = {
+        username: this.username,
+        password: this.password
+      };
+
+      try {
+        const response = await axios.post('http://127.0.0.1:8000/api/login/', payload, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        console.log('登录成功:', response.data);
+        // 保存 token 到本地存储，或者 Vuex 状态管理
+        localStorage.setItem('token', response.data.token);
+        // 跳转到主页或其他受保护的页面
+        this.$router.push('/');
+      } catch (error) {
+        if (error.response) {
+          console.error('登录失败:', error.response.data);
+          // 显示错误消息
+          alert(`登录失败: ${JSON.stringify(error.response.data)}`);
+        } else {
+          console.error('登录失败:', error.message);
+          alert(`登录失败: ${error.message}`);
+        }
+      }
     }
   }
 }
