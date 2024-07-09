@@ -20,7 +20,7 @@
           <input type="range" id="rating" v-model="newRating" min="0.0" max="9.9" step="0.1">
         </div>
         <input type="file" @change="handleImageUpload" multiple>
-        <button @click="postComment">提交评论</button>
+        <button @click="confirmSubmitComment">提交评论</button>
       </div>
       <ul>
         <li v-for="comment in paginatedComments" :key="comment.id">
@@ -79,9 +79,12 @@ export default {
       }
     },
     handleImageUpload(event) {
-      const files = event.target.files;
-      for (let i = 0; i < files.length; i++) {
-        this.newImages.push(files[i]);
+      this.newImages = Array.from(event.target.files);
+    },
+    confirmSubmitComment() {
+      const confirmed = window.confirm('确认提交吗？提交之后的评论将匿名且不可修改！');
+      if (confirmed) {
+        this.postComment();
       }
     },
     async postComment() {
@@ -96,9 +99,9 @@ export default {
       formData.append('comment_text', this.newCommentText);
       formData.append('rating', this.newRating);
       formData.append('is_featured', false);
-      for (let i = 0; i < this.newImages.length; i++) {
-        formData.append('images', this.newImages[i]);
-      }
+      this.newImages.forEach(image => {
+        formData.append('images', image);
+      });
 
       try {
         await axios.post('http://127.0.0.1:8000/api/comments/', formData, {
@@ -110,9 +113,9 @@ export default {
         this.newCommentText = '';
         this.newRating = 5.0;
         this.newImages = [];
-        this.fetchComments();
+        this.$router.go(0);  // 刷新页面
       } catch (error) {
-        console.error('发表评论失败:', error);
+        console.error('发表评论失败:', error.response.data);
       }
     },
     prevPage() {
