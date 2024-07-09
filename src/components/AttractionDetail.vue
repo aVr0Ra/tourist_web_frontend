@@ -13,11 +13,28 @@
 
     <div class="comments">
       <h2>评论区</h2>
-      <textarea v-model="newComment" placeholder="发表评论"></textarea>
-      <button @click="postComment">提交评论</button>
+      <div class="new-comment">
+        <textarea v-model="newCommentText" placeholder="发表评论"></textarea>
+        <div>
+          <label for="rating">评分: {{ newRating }}</label>
+          <input type="range" id="rating" v-model="newRating" min="0.0" max="9.9" step="0.1">
+        </div>
+        <input type="file" @change="handleImageUpload" multiple>
+        <button @click="postComment">提交评论</button>
+      </div>
       <ul>
-        <li v-for="comment in comments" :key="comment.id">{{ comment.text }}</li>
+        <li v-for="comment in paginatedComments" :key="comment.id">
+          <p class="comment-rating">{{ comment.rating }}/10分</p>
+          <p class="comment-text">{{ comment.comment_text }}</p>
+          <img v-if="comment.images.length" :src="comment.images[0].image" :alt="comment.comment_text" class="comment-image">
+          <p class="comment-date">发表于: {{ new Date(comment.created_at).toLocaleString() }}</p>
+        </li>
       </ul>
+      <div class="pagination">
+        <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
+        <span>第 {{ currentPage }} 页，共 {{ totalPages }} 页</span>
+        <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
+      </div>
     </div>
   </div>
 </template>
@@ -31,11 +48,16 @@ export default {
     return {
       attraction: null,
       comments: [],
-      newComment: ''
+      newCommentText: '',
+      newRating: 5.0,
+      newImages: [],
+      currentPage: 1,
+      commentsPerPage: 10
     };
   },
   created() {
     this.fetchAttractionDetails();
+    this.fetchComments();
   },
   methods: {
     async fetchAttractionDetails() {
@@ -47,16 +69,71 @@ export default {
         console.error('获取景点详情失败:', error);
       }
     },
+    async fetchComments() {
+      const attractionId = this.$route.params.id;
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/attractions/${attractionId}/comments`);
+        this.comments = response.data;
+      } catch (error) {
+        console.error('获取评论失败:', error);
+      }
+    },
+    handleImageUpload(event) {
+      const files = event.target.files;
+      for (let i = 0; i < files.length; i++) {
+        this.newImages.push(files[i]);
+      }
+    },
     async postComment() {
-      if (!this.newComment) {
+      const token = localStorage.getItem('token');
+      if (!this.newCommentText || !this.newRating || !token) {
+        alert('请填写所有字段并确保已登录');
         return;
       }
-      // 这里应该添加调用发表评论API的代码
-      // 例如：
-      // const response = await axios.post(`http://127.0.0.1:8000/api/attractions/${this.$route.params.id}/comments`, { text: this.newComment });
-      // this.comments.push(response.data);
-      this.comments.push({ id: this.comments.length + 1, text: this.newComment });
-      this.newComment = '';
+
+      const formData = new FormData();
+      formData.append('attraction', this.$route.params.id);
+      formData.append('comment_text', this.newCommentText);
+      formData.append('rating', this.newRating);
+      formData.append('is_featured', false);
+      for (let i = 0; i < this.newImages.length; i++) {
+        formData.append('images', this.newImages[i]);
+      }
+
+      try {
+        await axios.post('http://127.0.0.1:8000/api/comments/', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Token ${token}`
+          }
+        });
+        this.newCommentText = '';
+        this.newRating = 5.0;
+        this.newImages = [];
+        this.fetchComments();
+      } catch (error) {
+        console.error('发表评论失败:', error);
+      }
+    },
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
+    }
+  },
+  computed: {
+    paginatedComments() {
+      const start = (this.currentPage - 1) * this.commentsPerPage;
+      const end = start + this.commentsPerPage;
+      return this.comments.slice(start, end);
+    },
+    totalPages() {
+      return Math.ceil(this.comments.length / this.commentsPerPage);
     }
   }
 }
@@ -67,6 +144,7 @@ export default {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
+  text-align: left;
 }
 .attraction-image {
   width: 100%;
@@ -75,11 +153,21 @@ export default {
 .comments {
   margin-top: 20px;
 }
-.comments textarea {
+.new-comment {
+  margin-bottom: 20px;
+}
+.new-comment textarea {
   width: 100%;
   height: 100px;
 }
-.comments button {
+.new-comment input[type="range"] {
+  width: 100%;
+  margin-top: 10px;
+}
+.new-comment input[type="file"] {
+  margin-top: 10px;
+}
+.new-comment button {
   margin-top: 10px;
 }
 .comments ul {
@@ -88,8 +176,34 @@ export default {
 }
 .comments li {
   background: #f9f9f9;
-  margin: 5px 0;
+  margin: 10px 0;
   padding: 10px;
   border-radius: 5px;
+}
+.comment-rating {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+.comment-text {
+  font-size: 1em;
+}
+.comment-image {
+  width: 100px; /* Reduced size */
+  height: auto;
+  margin-top: 10px;
+}
+.comment-date {
+  font-size: 0.8em;
+  color: #777;
+}
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+.pagination button {
+  padding: 5px 10px;
+  font-size: 1em;
 }
 </style>
