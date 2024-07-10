@@ -10,6 +10,7 @@
           <router-link to="/register">注册</router-link>
         </div>
         <div v-else>
+          <router-link to="/profile">编辑个人资料</router-link>
           <button @click="logout">注销</button>
         </div>
       </div>
@@ -64,14 +65,14 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px; /* 增加纵向长度 */
+  padding: 20px;
   background-color: #42b983;
   color: white;
 }
 
 #app nav .logo {
   flex: 1;
-  font-size: 2em; /* 增加字号 */
+  font-size: 2em;
   cursor: pointer;
 }
 

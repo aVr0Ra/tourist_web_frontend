@@ -5,7 +5,8 @@ import HomePage from './components/HomePage.vue';
 import LoginPage from './components/LoginPage.vue';
 import RegisterPage from './components/RegisterPage.vue';
 import AttractionDetail from './components/AttractionDetail.vue';
-import SearchResults from './components/SearchResults.vue'; // 新增
+import SearchResults from './components/SearchResults.vue';
+import ProfilePage from './components/ProfilePage.vue'; // 新增
 
 Vue.config.productionTip = false;
 
@@ -16,7 +17,8 @@ const routes = [
   { path: '/login', component: LoginPage },
   { path: '/register', component: RegisterPage },
   { path: '/attractions/:id', component: AttractionDetail },
-  { path: '/search', name: 'SearchResults', component: SearchResults } // 新增
+  { path: '/search', name: 'SearchResults', component: SearchResults },
+  { path: '/profile', component: ProfilePage } // 新增
 ];
 
 const router = new VueRouter({
