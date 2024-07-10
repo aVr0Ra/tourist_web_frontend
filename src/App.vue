@@ -1,92 +1,113 @@
 <template>
   <div id="app">
-    <header>
-      <h1 @click="navigateTo('/')">旅游网站</h1>
-      <div class="auth-buttons" v-if="showAuthButtons">
-        <button v-if="!isLoggedIn" @click="navigateTo('/login')">登录</button>
-        <button v-if="!isLoggedIn" @click="navigateTo('/register')">注册</button>
-        <button v-if="isLoggedIn" @click="logout">注销</button>
+    <nav>
+      <div class="logo" @click="goHome">
+        旅游网站
       </div>
-    </header>
-    <main>
-      <router-view></router-view>
-    </main>
+      <div class="auth">
+        <div v-if="!isLoggedIn">
+          <router-link to="/login">登录</router-link>
+          <router-link to="/register">注册</router-link>
+        </div>
+        <div v-else>
+          <button @click="logout">注销</button>
+        </div>
+      </div>
+    </nav>
+    <div v-if="showSearchBar" class="search-bar">
+      <input type="text" v-model="searchQuery" placeholder="搜索景点..." @keyup.enter="searchAttractions">
+    </div>
+    <router-view @login="updateAuthStatus"/>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'App',
   data() {
     return {
-      isLoggedIn: false
+      searchQuery: '',
+      isLoggedIn: !!localStorage.getItem('token')
     };
   },
-  created() {
-    this.checkLoginStatus();
+  computed: {
+    showSearchBar() {
+      return this.$route.path !== '/login' && this.$route.path !== '/register';
+    }
   },
   methods: {
-    checkLoginStatus() {
-      const token = localStorage.getItem('token');
-      this.isLoggedIn = !!token;
-    },
-    navigateTo(route) {
-      if (this.$route.path !== route) {
-        this.$router.push(route);
+    goHome() {
+      if (this.$route.path !== '/') {
+        this.$router.push('/');
       }
     },
     logout() {
       localStorage.removeItem('token');
       this.isLoggedIn = false;
-      this.$router.push('/login');
-    }
-  },
-  computed: {
-    showAuthButtons() {
-      return !['/login', '/register'].includes(this.$route.path);
-    }
-  },
-  watch: {
-    $route() {
-      this.checkLoginStatus();
+      this.$router.push('/').catch(err => {
+        if (err.name !== 'NavigationDuplicated') {
+          throw err;
+        }
+      });
+    },
+    searchAttractions() {
+      this.$router.push({ name: 'SearchResults', query: { q: this.searchQuery } });
+    },
+    updateAuthStatus() {
+      this.isLoggedIn = !!localStorage.getItem('token');
     }
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-header {
-  background-color: #42b983;
-  padding: 20px;
-  color: white;
+#app nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 20px; /* 增加纵向长度 */
+  background-color: #42b983;
+  color: white;
+}
+
+#app nav .logo {
+  flex: 1;
+  font-size: 2em; /* 增加字号 */
   cursor: pointer;
 }
-header h1 {
-  cursor: pointer;
-}
-.auth-buttons {
+
+#app nav .auth {
   display: flex;
   gap: 10px;
 }
-.auth-buttons button {
-  padding: 10px 20px;
-  border: none;
+
+#app nav a, #app nav button {
+  color: white;
+  text-decoration: none;
+  margin-left: 10px;
+  padding: 5px 10px;
+  border: 1px solid white;
   border-radius: 5px;
+  background-color: #42b983;
   cursor: pointer;
 }
-.auth-buttons button:hover {
-  background-color: #2c3e50;
-  color: white;
+
+#app nav a:hover, #app nav button:hover {
+  background-color: white;
+  color: #42b983;
+}
+
+.search-bar {
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  background-color: #f5f5f5;
+}
+
+.search-bar input {
+  width: 50%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 </style>
