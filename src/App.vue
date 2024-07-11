@@ -89,7 +89,12 @@ export default {
       }
     },
     searchAttractions() {
-      this.$router.push({ name: 'SearchResults', query: { q: this.searchQuery } });
+      const query = this.searchQuery;
+      this.$router.push({ name: 'SearchResults', query: { q: query } }).catch(err => {
+        if (err.name !== 'NavigationDuplicated') {
+          throw err;
+        }
+      });
     }
   }
 }
