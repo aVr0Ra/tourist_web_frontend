@@ -8,6 +8,7 @@ import AttractionDetail from './components/AttractionDetail.vue';
 import SearchResults from './components/SearchResults.vue';
 import ProfilePage from './components/ProfilePage.vue';
 import FrequentTravelersPage from './components/FrequentTravelersPage.vue';
+import FavoritesPage from './components/FavoritesPage.vue';
 
 Vue.config.productionTip = false;
 
@@ -20,7 +21,8 @@ const routes = [
   { path: '/attractions/:id', component: AttractionDetail },
   { path: '/search', name: 'SearchResults', component: SearchResults },
   { path: '/profile', component: ProfilePage },
-  { path: '/frequent-travelers', component: FrequentTravelersPage }
+  { path: '/frequent-travelers', component: FrequentTravelersPage },
+  { path: '/favorites', component: FavoritesPage }
 ];
 
 const router = new VueRouter({

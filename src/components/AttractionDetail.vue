@@ -1,6 +1,11 @@
 <template>
   <div class="attraction-detail">
-    <h1>{{ attraction.name }}</h1>
+    <div class="header">
+      <h1>{{ attraction.name }}</h1>
+      <button @click="toggleFavorite" :class="{'favorite-button': !isFavorite, 'unfavorite-button': isFavorite}">
+        {{ isFavorite ? '取消收藏' : '收藏' }}
+      </button>
+    </div>
     <img :src="attraction.images[0].image" :alt="attraction.name" class="attraction-image">
     <p><strong>星级:</strong> {{ attraction.star_level }}</p>
     <p><strong>评分:</strong> {{ attraction.rating }}</p>
@@ -49,12 +54,14 @@ export default {
       newRating: '',
       newImages: [],
       currentPage: 1,
-      commentsPerPage: 5
+      commentsPerPage: 5,
+      isFavorite: false
     };
   },
   created() {
     this.fetchAttractionDetails();
     this.fetchComments();
+    this.checkIfFavorite();
   },
   methods: {
     async fetchAttractionDetails() {
@@ -115,6 +122,52 @@ export default {
         console.error('发表评论失败:', error);
       }
     },
+    async checkIfFavorite() {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/api/favorites/', {
+          headers: {
+            'Authorization': `Token ${token}`
+          }
+        });
+        this.isFavorite = response.data.some(favorite => favorite.attraction === parseInt(this.$route.params.id));
+      } catch (error) {
+        console.error('检查收藏状态失败:', error);
+      }
+    },
+    async toggleFavorite() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('请先登录');
+        return;
+      }
+
+      if (this.isFavorite) {
+        try {
+          await axios.delete(`http://127.0.0.1:8000/api/favorites/${this.$route.params.id}/`, {
+            headers: {
+              'Authorization': `Token ${token}`
+            }
+          });
+          this.isFavorite = false;
+        } catch (error) {
+          console.error('取消收藏失败:', error);
+        }
+      } else {
+        try {
+          await axios.post('http://127.0.0.1:8000/api/favorites/', { attraction: parseInt(this.$route.params.id) }, {
+            headers: {
+              'Authorization': `Token ${token}`
+            }
+          });
+          this.isFavorite = true;
+        } catch (error) {
+          console.error('收藏失败:', error);
+        }
+      }
+    },
     prevPage() {
       if (this.currentPage > 1) {
         this.currentPage--;
@@ -145,6 +198,27 @@ export default {
   margin: 0 auto;
   padding: 20px;
   text-align: left;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.favorite-button {
+  background-color: #42b983;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.unfavorite-button {
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 .attraction-image {
   width: 100%;
