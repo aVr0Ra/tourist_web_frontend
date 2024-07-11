@@ -37,7 +37,7 @@ export default {
         this.$emit('login');
         this.$router.push('/');
       } catch (error) {
-        alert('登录失败，请检查您的用户名和密码');
+        alert('登录失败，请检查用户名和密码');
       }
     }
   }
@@ -50,24 +50,29 @@ export default {
   margin: 0 auto;
   padding: 20px;
 }
+
 form div {
   margin-bottom: 15px;
 }
+
 form label {
   display: block;
   margin-bottom: 5px;
 }
+
 form input {
   width: 100%;
   padding: 8px;
   box-sizing: border-box;
 }
+
 button {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
+
 button:hover {
   background-color: #42b983;
   color: white;
