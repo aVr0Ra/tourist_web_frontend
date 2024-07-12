@@ -20,9 +20,12 @@
       <h2>评论区</h2>
       <div class="new-comment">
         <textarea v-model="newCommentText" placeholder="发表评论"></textarea>
-        <input type="range" v-model="newRating" min="0" max="9.9" step="0.1">
+        <div>
+          <label for="rating">评分: {{ newRating }}</label>
+          <input type="range" id="rating" v-model="newRating" min="0.0" max="9.9" step="0.1">
+        </div>
         <input type="file" @change="handleImageUpload" multiple>
-        <button @click="postComment">提交评论</button>
+        <button @click="confirmSubmitComment">提交评论</button>
       </div>
       <ul>
         <li v-for="comment in paginatedComments" :key="comment.id">
@@ -51,10 +54,10 @@ export default {
       attraction: null,
       comments: [],
       newCommentText: '',
-      newRating: '',
+      newRating: 5.0,
       newImages: [],
       currentPage: 1,
-      commentsPerPage: 5,
+      commentsPerPage: 10,
       isFavorite: false
     };
   },
@@ -67,7 +70,7 @@ export default {
     async fetchAttractionDetails() {
       const attractionId = this.$route.params.id;
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/attractions/${attractionId}`);
+        const response = await axios.get(`http://127.0.0.1:8000/api/attractions/${attractionId}/`);
         this.attraction = response.data;
       } catch (error) {
         console.error('获取景点详情失败:', error);
@@ -76,20 +79,19 @@ export default {
     async fetchComments() {
       const attractionId = this.$route.params.id;
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/attractions/${attractionId}/comments`);
+        const response = await axios.get(`http://127.0.0.1:8000/api/attractions/${attractionId}/comments/`);
         this.comments = response.data;
       } catch (error) {
         console.error('获取评论失败:', error);
       }
     },
     handleImageUpload(event) {
-      const files = event.target.files;
-      for (let i = 0; i < files.length; i++) {
-        const reader = new FileReader();
-        reader.readAsDataURL(files[i]);
-        reader.onload = () => {
-          this.newImages.push({ image: reader.result.split(',')[1] });
-        };
+      this.newImages = Array.from(event.target.files);
+    },
+    confirmSubmitComment() {
+      const confirmed = window.confirm('确认提交吗？提交之后的评论将匿名且不可修改！');
+      if (confirmed) {
+        this.postComment();
       }
     },
     async postComment() {
@@ -99,27 +101,28 @@ export default {
         return;
       }
 
-      const payload = {
-        attraction: this.$route.params.id,
-        comment_text: this.newCommentText,
-        rating: this.newRating,
-        is_featured: false,
-        images: this.newImages
-      };
+      const formData = new FormData();
+      formData.append('attraction', this.$route.params.id);
+      formData.append('comment_text', this.newCommentText);
+      formData.append('rating', this.newRating);
+      formData.append('is_featured', false);
+      this.newImages.forEach(image => {
+        formData.append('images', image);
+      });
 
       try {
-        await axios.post('http://127.0.0.1:8000/api/comments', payload, {
+        await axios.post('http://127.0.0.1:8000/api/comments/', formData, {
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'multipart/form-data',
             'Authorization': `Token ${token}`
           }
         });
         this.newCommentText = '';
-        this.newRating = '';
+        this.newRating = 5.0;
         this.newImages = [];
-        this.fetchComments();
+        this.$router.go(0);  // 刷新页面
       } catch (error) {
-        console.error('发表评论失败:', error);
+        console.error('发表评论失败:', error.response.data);
       }
     },
     async checkIfFavorite() {
@@ -262,7 +265,7 @@ export default {
   font-size: 1em;
 }
 .comment-image {
-  width: 500px;
+  width: 100px;
   height: auto;
   margin-top: 10px;
 }
