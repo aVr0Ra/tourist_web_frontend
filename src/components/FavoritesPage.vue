@@ -3,7 +3,7 @@
     <h1>收藏夹</h1>
     <div class="favorites-list">
       <div v-for="favorite in favorites" :key="favorite.attraction.id" class="favorite-item">
-        <router-link :to="{ name: 'AttractionDetail', params: { id: favorite.attraction.id } }" class="favorite-link">
+        <router-link :to="`/attractions/${favorite.attraction.id}`" class="favorite-link">
           <img :src="favorite.attraction.images.length > 0 ? favorite.attraction.images[0].image : ''" :alt="favorite.attraction.name" class="favorite-image">
           <div class="favorite-details">
             <h2>{{ favorite.attraction.name }}</h2>
