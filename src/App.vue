@@ -11,6 +11,7 @@
             <router-link to="/favorites" @click.native="hideDropdown">收藏夹</router-link>
             <router-link v-if="userType === 'agent'" to="/add-travel-route" @click.native="hideDropdown">添加旅游线路</router-link>
             <router-link v-if="userType === 'agent'" to="/route-management" @click.native="hideDropdown">管理线路及预约</router-link>
+            <router-link v-if="userType === 'regular'" to="/my-reservations" @click.native="hideDropdown">我的预约</router-link>
             <button @click="logout">注销</button>
           </div>
         </div>

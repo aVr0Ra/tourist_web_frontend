@@ -26,8 +26,6 @@ export default {
   },
   created() {
     this.fetchProfile();
-    this.fetchRouteDetails();
-    this.fetchScheduleDetails();
   },
   methods: {
     async fetchProfile() {
@@ -39,8 +37,16 @@ export default {
           }
         });
         this.user = response.data.user;
+        if (response.data.user_type !== 'regular') {
+          alert('只有普通用户可以预约路线');
+          this.$router.push('/');
+        } else {
+          this.fetchRouteDetails();
+          this.fetchScheduleDetails();
+        }
       } catch (error) {
         console.error('获取用户信息失败:', error);
+        this.$router.push('/login');
       }
     },
     async fetchRouteDetails() {
