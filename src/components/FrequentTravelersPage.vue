@@ -66,13 +66,32 @@ export default {
       },
       isEditing: false,
       editingId: null,
-      showAddForm: false
+      showAddForm: false,
+      userType: ''
     };
   },
   created() {
-    this.fetchTravelers();
+    this.checkUserType();
   },
   methods: {
+    async checkUserType() {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/api/profile/', {
+          headers: {
+            'Authorization': `Token ${token}`
+          }
+        });
+        this.userType = response.data.user_type;
+        if (this.userType === 'agent') {
+          this.$router.push('/'); // Redirect to home if user type is 'agent'
+        } else {
+          this.fetchTravelers();
+        }
+      } catch (error) {
+        console.error('获取用户类型失败:', error);
+      }
+    },
     async fetchTravelers() {
       const token = localStorage.getItem('token');
       try {

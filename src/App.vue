@@ -7,8 +7,10 @@
           <img :src="fullAvatarUrl" alt="Avatar" class="avatar" @mouseover="showDropdown = true" @click="toggleDropdown">
           <div v-if="showDropdown" class="dropdown">
             <router-link to="/profile" @click.native="hideDropdown">编辑个人资料</router-link>
-            <router-link to="/frequent-travelers" @click.native="hideDropdown">添加/修改常用联系人</router-link>
+            <router-link v-if="userType !== 'agent'" to="/frequent-travelers" @click.native="hideDropdown">添加/修改常用联系人</router-link>
             <router-link to="/favorites" @click.native="hideDropdown">收藏夹</router-link>
+            <router-link v-if="userType === 'agent'" to="/add-travel-route" @click.native="hideDropdown">添加旅游线路</router-link>
+            <router-link v-if="userType === 'agent'" to="/route-management" @click.native="hideDropdown">线路管理</router-link>
             <button @click="logout">注销</button>
           </div>
         </div>
@@ -20,6 +22,7 @@
       <div v-if="showSearchBar" class="search-bar">
         <input v-model="searchQuery" @keyup.enter="searchAttractions" placeholder="搜索景点...">
         <button @click="searchAttractions">搜索</button>
+        <button @click="searchRoutes">搜索路线</button>
       </div>
     </nav>
     <router-view @login="handleLogin"/>
@@ -35,15 +38,16 @@ export default {
       isLoggedIn: false,
       showDropdown: false,
       avatar: '',
-      searchQuery: ''
+      searchQuery: '',
+      userType: ''
     };
   },
   computed: {
     fullAvatarUrl() {
-      return this.avatar ? `http://127.0.0.1:8000${this.avatar}` : '';
+      return this.avatar;
     },
     showSearchBar() {
-      const hidePaths = ['/login', '/register', '/profile', '/frequent-travelers'];
+      const hidePaths = ['/login', '/register', '/profile', '/frequent-travelers', '/add-travel-route', '/route-management', '/search-routes'];
       return !hidePaths.includes(this.$route.path);
     }
   },
@@ -66,7 +70,8 @@ export default {
             'Authorization': `Token ${token}`
           }
         });
-        this.avatar = response.data.avatar;
+        this.avatar = `${response.data.avatar}`;
+        this.userType = response.data.user_type;
       } catch (error) {
         console.error('获取个人资料失败:', error);
       }
@@ -84,6 +89,8 @@ export default {
     logout() {
       localStorage.removeItem('token');
       this.isLoggedIn = false;
+      this.avatar = '';
+      this.userType = '';
       if (this.$route.path !== '/') {
         this.$router.push('/');
       }
@@ -95,6 +102,9 @@ export default {
           throw err;
         }
       });
+    },
+    searchRoutes() {
+      this.$router.push({ name: 'SearchRoutes' });
     }
   }
 }
@@ -106,12 +116,12 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background-color: #42b983; /* 绿色背景 */
+  background-color: #42b983;
 }
 
 .site-title {
   font-size: 2em;
-  color: white; /* 白色字体 */
+  color: white;
   text-decoration: none;
 }
 
@@ -135,7 +145,7 @@ export default {
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   padding: 10px;
-  white-space: nowrap; /* 保持选项在一行 */
+  white-space: nowrap;
 }
 
 .dropdown a,

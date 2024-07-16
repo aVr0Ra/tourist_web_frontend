@@ -86,7 +86,15 @@ export default {
       }
     },
     handleImageUpload(event) {
-      this.newImages = Array.from(event.target.files);
+      const files = Array.from(event.target.files);
+      const validExtensions = ['image/jpeg', 'image/png', 'image/gif'];
+      const invalidFiles = files.filter(file => !validExtensions.includes(file.type));
+      if (invalidFiles.length > 0) {
+        alert('请上传有效的图片文件');
+        event.target.value = ''; // 清空输入
+        return;
+      }
+      this.newImages = files;
     },
     confirmSubmitComment() {
       const confirmed = window.confirm('确认提交吗？提交之后的评论将匿名且不可修改！');

@@ -65,7 +65,7 @@ export default {
   },
   computed: {
     fullAvatarUrl() {
-      return this.profile.avatar ? `http://127.0.0.1:8000${this.profile.avatar}` : '';
+      return this.profile.avatar;
     }
   },
   created() {
@@ -87,6 +87,12 @@ export default {
     },
     handleAvatarUpload(event) {
       const file = event.target.files[0];
+      const validExtensions = ['image/jpeg', 'image/png', 'image/gif'];
+      if (file && !validExtensions.includes(file.type)) {
+        alert('请上传有效的图片文件');
+        event.target.value = ''; // 清空输入
+        return;
+      }
       this.newAvatarFile = file;
     },
     async updateProfile() {
@@ -187,6 +193,6 @@ button:hover {
 h3 {
   margin-top: 20px;
   margin-bottom: 10px;
-  font-size: 1.5em; /* 确保字体大小一致 */
+  font-size: 1.5em;
 }
 </style>
