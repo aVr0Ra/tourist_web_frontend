@@ -10,7 +10,7 @@
             <router-link v-if="userType !== 'agent'" to="/frequent-travelers" @click.native="hideDropdown">添加/修改常用联系人</router-link>
             <router-link to="/favorites" @click.native="hideDropdown">收藏夹</router-link>
             <router-link v-if="userType === 'agent'" to="/add-travel-route" @click.native="hideDropdown">添加旅游线路</router-link>
-            <router-link v-if="userType === 'agent'" to="/route-management" @click.native="hideDropdown">线路管理</router-link>
+            <router-link v-if="userType === 'agent'" to="/route-management" @click.native="hideDropdown">管理线路及预约</router-link>
             <button @click="logout">注销</button>
           </div>
         </div>
@@ -21,7 +21,7 @@
       </div>
       <div v-if="showSearchBar" class="search-bar">
         <input v-model="searchQuery" @keyup.enter="searchAttractions" placeholder="搜索景点...">
-        <button @click="searchAttractions">搜索</button>
+        <button @click="searchAttractions">搜索景点</button>
         <button @click="searchRoutes">搜索路线</button>
       </div>
     </nav>
@@ -47,7 +47,7 @@ export default {
       return this.avatar;
     },
     showSearchBar() {
-      const hidePaths = ['/login', '/register', '/profile', '/frequent-travelers', '/add-travel-route', '/route-management', '/search-routes'];
+      const hidePaths = ['/login', '/register', '/profile', '/frequent-travelers', '/add-travel-route'];
       return !hidePaths.includes(this.$route.path);
     }
   },
@@ -104,7 +104,12 @@ export default {
       });
     },
     searchRoutes() {
-      this.$router.push({ name: 'SearchRoutes' });
+      const query = this.searchQuery;
+      this.$router.push({ name: 'SearchRoutes', query: { q: query } }).catch(err => {
+        if (err.name !== 'NavigationDuplicated') {
+          throw err;
+        }
+      });
     }
   }
 }

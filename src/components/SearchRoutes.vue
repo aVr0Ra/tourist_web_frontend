@@ -28,7 +28,9 @@
           <p>安排时间:</p>
           <ul>
             <li v-for="schedule in route.schedules" :key="schedule.id">
-              {{ schedule.rq }} - {{ schedule.days }} 天 - 上限 {{ schedule.limit }} 人
+              <router-link :to="{ name: 'ReserveRoute', params: { scheduleId: schedule.id, routeId: route.id } }">
+                {{ schedule.rq }} - {{ schedule.days }} 天 - 上限 {{ schedule.limit }} 人
+              </router-link>
             </li>
           </ul>
         </div>

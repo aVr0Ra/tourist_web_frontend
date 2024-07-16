@@ -14,6 +14,12 @@
     <ul class="schedule-list">
       <li v-for="schedule in schedules" :key="schedule.id">
         {{ schedule.rq }} - {{ schedule.days }} 天 - 上限 {{ schedule.limit }} 人
+        <p><strong>预约用户数:</strong> {{ schedule.reservationCount }}</p>
+        <ul v-if="schedule.reservationUsers && schedule.reservationUsers.length">
+          <li v-for="user in schedule.reservationUsers" :key="user.id">
+            用户ID: {{ user.tr_id }}
+          </li>
+        </ul>
       </li>
     </ul>
     <button @click="toggleAddDateForm" v-if="!showAddDateForm">添加新日期</button>
@@ -90,12 +96,33 @@ export default {
       const routeId = this.$route.params.routeId;
       const token = localStorage.getItem('token');
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/rt_rq/route/${routeId}/`, {
+        const schedulesResponse = await axios.get(`http://127.0.0.1:8000/api/rt_rq/route/${routeId}/`, {
           headers: {
             'Authorization': `Token ${token}`
           }
         });
-        this.schedules = response.data;
+        const schedules = schedulesResponse.data;
+
+        // Fetch all reservations for all routes
+        const reservationsResponse = await axios.get(`http://127.0.0.1:8000/api/reservations/`, {
+          headers: {
+            'Authorization': `Token ${token}`
+          }
+        });
+        const reservations = reservationsResponse.data;
+
+        // Map reservation counts and user information to schedules
+        schedules.forEach(schedule => {
+          const scheduleReservations = reservations.filter(
+            reservation => reservation.rt_rq_id === schedule.id
+          );
+          schedule.reservationCount = scheduleReservations.length;
+          schedule.reservationUsers = scheduleReservations.map(reservation => ({
+            tr_id: reservation.tr_id
+          }));
+        });
+
+        this.schedules = schedules;
       } catch (error) {
         console.error('获取线路时间表失败:', error);
       }

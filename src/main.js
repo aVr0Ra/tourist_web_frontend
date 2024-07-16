@@ -13,10 +13,12 @@ import SetRouteAttractions from './components/SetRouteAttractions.vue';
 import SetRouteDates from './components/SetRouteDates.vue';
 import SearchResults from './components/SearchResults.vue';
 import RouteManagementPage from './components/RouteManagementPage.vue';
-import RouteDetails from './components/RouteDetails.vue';
 import SearchRoutes from './components/SearchRoutes.vue';
+import ReserveRoute from './components/ReserveRoute.vue';
+import MyReservations from './components/MyReservations.vue';
+import RouteDetails from './components/RouteDetails.vue'; // 添加这一行
 
-Vue.config.productionTip = false;
+Vue.config.productionTip = false; 
 
 Vue.use(VueRouter);
 
@@ -32,9 +34,11 @@ const routes = [
   { path: '/set-route-attractions/:routeId', component: SetRouteAttractions, name: 'SetRouteAttractions' },
   { path: '/set-route-dates/:routeId', component: SetRouteDates, name: 'SetRouteDates' },
   { path: '/route-management', component: RouteManagementPage, name: 'RouteManagementPage' },
-  { path: '/route-details/:routeId', component: RouteDetails, name: 'RouteDetails' },
+  { path: '/search-routes', component: SearchRoutes, name: 'SearchRoutes' },
+  { path: '/reserve-route/:routeId/:scheduleId', component: ReserveRoute, name: 'ReserveRoute' },
   { path: '/search', component: SearchResults, name: 'SearchResults' },
-  { path: '/search-routes', component: SearchRoutes, name: 'SearchRoutes' }
+  { path: '/my-reservations', component: MyReservations, name: 'MyReservations' },
+  { path: '/route-details/:routeId', component: RouteDetails, name: 'RouteDetails' }
 ];
 
 const router = new VueRouter({
